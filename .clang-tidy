@@ -3,7 +3,6 @@ Checks: >
   bugprone-*,
   -bugprone-easily-swappable-parameters,
   misc-unused-parameters,
-  readability-braces-around-statements,
   readability-implicit-bool-conversion,
   readability-misleading-indentation,
   readability-inconsistent-declaration-parameter-name,

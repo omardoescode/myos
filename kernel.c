@@ -18,6 +18,7 @@ void kernel_main(void) {
 
   printf("Enter a string: ");
   char buf[148];
+  printf("%p", &buf);
   readline(buf, sizeof(buf));
   printf("You typed: %s\n", buf);
 

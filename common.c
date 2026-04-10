@@ -46,7 +46,7 @@ void printf(const char *fmt, ...) {
         unsigned magnitude = value;
         if (value < 0) {
           putchar('-');
-          magnitude = -magnitude;
+          magnitude = -(unsigned)magnitude;
         }
 
         unsigned divisor = 1;
@@ -61,6 +61,15 @@ void printf(const char *fmt, ...) {
         break;
       }
       case 'x': {
+        unsigned value = va_arg(vargs, unsigned);
+        for (int i = 7; i >= 0; i--) {
+          unsigned nibble = (value >> (i * 4)) & 0xf;
+          putchar("0123456789abcdef"[nibble]);
+        }
+      }
+      case 'p': {
+        putchar('0');
+        putchar('x');
         unsigned value = va_arg(vargs, unsigned);
         for (int i = 7; i >= 0; i--) {
           unsigned nibble = (value >> (i * 4)) & 0xf;
@@ -142,7 +151,7 @@ int strcmp(const char *s1, const char *s2) {
 }
 
 char *readline(char *buf, size_t n) {
-  int i;
+  size_t i;
 
   for (i = 0; n - 1 > i; i++) {
     char c = getchar();
@@ -157,4 +166,13 @@ char *readline(char *buf, size_t n) {
   putchar('\n');
 
   return buf;
+}
+
+size_t strlen(const char *s) {
+  size_t res;
+
+  res = 0;
+  while (*s != '\0')
+    res++, s++;
+  return res;
 }
