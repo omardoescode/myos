@@ -66,6 +66,7 @@ void printf(const char *fmt, ...) {
           unsigned nibble = (value >> (i * 4)) & 0xf;
           putchar("0123456789abcdef"[nibble]);
         }
+        break;
       }
       case 'p': {
         putchar('0');

@@ -1,5 +1,4 @@
 #pragma once
-
 #include "common.h"
 struct trap_frame {
   uint32_t ra;
