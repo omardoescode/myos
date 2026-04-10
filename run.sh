@@ -17,7 +17,7 @@ CFLAGS="-std=c11 -O2 -g3 -Wall -Wextra --target=riscv32-unknown-elf  -fuse-ld=ll
 # -Wl,-Map=kernel.map	Output a map file (linker allocation result).
 
 # Build the kernel
-$CC $CFLAGS -Wl,-Tkernel.ld -Wl,-Map=kernel.map -o kernel.elf \
+bear -- $CC $CFLAGS -Wl,-Tkernel.ld -Wl,-Map=kernel.map -o kernel.elf \
   kernel.c common.c sbi.c
 
 # Start Qemu
