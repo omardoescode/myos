@@ -1,5 +1,6 @@
 #include "kernel.h"
 #include "common.h"
+#include "panic.h"
 
 // __bss means the start address of the `.bss` section, so we use `[]` to ensure
 // that _bss returns  an address and prevent any mistakes
@@ -14,6 +15,8 @@ void kernel_main(void) {
   char c = getchar();
   printf("Next Ascii Code: %c\n", c + 1);
 
+  PANIC("booted!");
+  puts("Unreachable");
   for (;;) {
     __asm__ __volatile__("wfi");
   }
