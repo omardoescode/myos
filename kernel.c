@@ -12,8 +12,14 @@ void kernel_main(void) {
   printf("%x\n", -1);
   puts("Hello, World");
 
+  puts("Enter a character: ");
   char c = getchar();
   printf("Next Ascii Code: %c\n", c + 1);
+
+  printf("Enter a string: ");
+  char buf[148];
+  readline(buf, sizeof(buf));
+  printf("You typed: %s\n", buf);
 
   PANIC("booted!");
   puts("Unreachable");

@@ -33,6 +33,7 @@ void putchar(char);
 
 // Input
 char getchar(void);
+char *readline(char *buf, size_t n);
 
 // Memory related methods
 void *memset(void *s, char c, size_t n);
