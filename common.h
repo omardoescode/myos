@@ -11,8 +11,13 @@ typedef uint32_t size_t;
 #define va_end __builtin_va_end
 #define va_arg __builtin_va_arg
 
+// Output
 void printf(const char *fmt, ...);
 void puts(const char *str);
+void putchar(char);
+
+// Input
+char getchar(void);
 
 // Memory related methods
 void *memset(void *s, char c, size_t n);

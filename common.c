@@ -1,6 +1,5 @@
 #include "common.h"
-
-void putchar(char ch);
+#include "sbi.h"
 
 void printf(const char *fmt, ...) {
   va_list vargs;
@@ -102,4 +101,22 @@ void *memcpy(void *dest, const void *src, size_t n) {
     buf[i] = src_buf[i];
   }
   return dest;
+}
+
+void putchar(char ch) {
+  // a7 = 1: Console Putchar, writes to the UART hardware
+  sbi_call(ch, 0, 0, 0, 0, 0, 0, 1);
+}
+
+char getchar(void) {
+  char c = 0;
+  for (;;) {
+    struct sbiret ret = sbi_call(0, 0, 0, 0, 0, 0, 0, 2);
+    // this ecall puts the char in error
+    if (ret.error != -1) {
+      c = ret.error;
+      break;
+    }
+  }
+  return c;
 }
