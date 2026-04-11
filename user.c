@@ -1,16 +1,16 @@
 #include "user.h"
+#include "syscall.h"
 
 extern char __stack_top[];
 
 __attribute__((noreturn)) void exit(void) {
+  syscall(SYS_EXIT, 0, 0, 0);
   for (;;)
     ;
 }
 
-void putchar(char ch) {
-  // To be implemented via syscalls
-  // I love syscalls :) [a cool concept]
-}
+void putchar(char ch) { syscall(SYS_PUTCHAR, ch, 0, 0); }
+char getchar(void) { return syscall(SYS_GETCHAR, 0, 0, 0); }
 
 __attribute__((section(".text.start"))) __attribute__((naked)) void
 start(void) {

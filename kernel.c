@@ -1,5 +1,6 @@
 #include "kernel.h"
 #include "common.h"
+#include "csr.h"
 #include "panic.h"
 #include "process.h"
 
@@ -10,32 +11,6 @@ extern char _binary_shell_bin_start[];
 extern char _binary_shell_bin_size[];
 
 void kernel_entry(void);
-
-void delay(void) {
-  for (int i = 0; i < 30000000; i++)
-    __asm__ __volatile__("nop");
-}
-
-struct process *proc_a;
-struct process *proc_b;
-void proc_a_entry(void) {
-  printf("starting process A\n");
-  while (1) {
-    putchar('A');
-    delay();
-    yield();
-  }
-}
-
-void proc_b_entry(void) {
-
-  printf("starting process B\n");
-  while (1) {
-    putchar('B');
-    delay();
-    yield();
-  }
-}
 
 void kernel_main(void) {
   memset(__bss, 0, (size_t)__bss_end - (size_t)__bss);
@@ -148,14 +123,4 @@ __attribute__((naked)) __attribute__((aligned(4))) void kernel_entry(void) {
                        "lw s11, 4 * 29(sp)\n"
                        "lw sp,  4 * 30(sp)\n"
                        "sret\n");
-}
-
-void handle_trap(struct trap_frame *f) {
-  (void)f;
-  uint32_t scause = READ_CSR(scause);
-  uint32_t stval = READ_CSR(stval);
-  uint32_t user_pc = READ_CSR(sepc);
-
-  PANIC("unexpected trap scause=%x, stval=%x, sepc=%x\n", scause, stval,
-        user_pc);
 }

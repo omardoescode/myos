@@ -1,5 +1,4 @@
 #include "userland.h"
-#include "panic.h"
 __attribute__((naked)) void user_entry(void) {
   __asm__ __volatile__(
       "csrw sepc, %[sepc]        \n"

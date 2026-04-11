@@ -111,3 +111,29 @@ void *memcpy(void *dest, const void *src, size_t n) {
   }
   return dest;
 }
+
+char *strcpy(char *dst, const char *src) {
+  char *org = dst;
+  while (*src != '\0') {
+    *dst = *src;
+    dst++, src++;
+  }
+  *dst = '\0';
+  return org;
+}
+
+int strcmp(const char *s1, const char *s2) {
+  while (*s1 && *s2) {
+    if (*s1 != *s2)
+      break;
+    s1++, s2++;
+  }
+  return *(unsigned char *)s1 - *(unsigned char *)s2;
+}
+
+size_t strlen(const char *s) {
+  size_t res = 0;
+  while (*s != '\0')
+    res++, s++;
+  return res;
+}
