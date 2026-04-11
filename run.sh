@@ -1,24 +1,18 @@
 set -xue
 QEMU=qemu-system-riscv32
 
-CC=clang
+CC=$(which clang)
 CFLAGS="-std=c11 -O2 -g3 -Wall -Wextra --target=riscv32-unknown-elf  -fuse-ld=lld -fno-stack-protector -ffreestanding -nostdlib"
-# -std=c11	Use C11.
-# -O2	Enable optimizations to generate efficient machine code.
-# -g3	Generate the maximum amount of debug information.
-# -Wall	Enable major warnings.
-# -Wextra	Enable additional warnings.
-# --target=riscv32-unknown-elf	Compile for 32-bit RISC-V.
-# -ffreestanding	Do not use the standard library of the host environment (your development environment).
-# -fuse-ld=lld	Use LLVM linker (ld.lld).
-# -fno-stack-protector	Disable unnecessary stack protection to avoid unexpected behavior in stack manipulation (see #31).
-# -nostdlib	Do not link the standard library.
-# -Wl,-Tkernel.ld	Specify the linker script.
-# -Wl,-Map=kernel.map	Output a map file (linker allocation result).
+OBJCOPY=$(which llvm-objcopy)
+
+# Build the shell (application)
+$CC $CFLAGS -Wl,-Tuser.ld -Wl,-Map=shell.map -o shell.elf shell.c user.c common.c
+$OBJCOPY --set-section-flags .bss=alloc,contents -O binary shell.elf shell.bin
+$OBJCOPY -Ibinary -Oelf32-littleriscv shell.bin shell.bin.o
 
 # Build the kernel
 bear -- $CC $CFLAGS -Wl,-Tkernel.ld -Wl,-Map=kernel.map -o kernel.elf \
-  kernel.c common.c sbi.c process.c paging.c
+  kernel.c common.c sbi.c process.c paging.c utils.c shell.bin.o
 
 # Start Qemu
 $QEMU \
@@ -28,4 +22,5 @@ $QEMU \
   -serial mon:stdio \
   --no-reboot \
   -echr 0x11 \
+  -d unimp,guest_errors,int,cpu_reset -D qemu.log \
   -kernel kernel.elf

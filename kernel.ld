@@ -2,6 +2,7 @@ ENTRY(boot) /* the entry point of the kernel is the `boot` function */
 
 SECTIONS {
     . = 0x80200000; /* the base address */
+    __kernel_base = .;
 
     .text :{
         KEEP(*(.text.boot)); /* always placed at the beginning */

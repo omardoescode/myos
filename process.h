@@ -9,6 +9,7 @@ struct process {
   int pid;
   int state;
   vaddr_t sp;
+  uint32_t *page_table;
   uint8_t stack[8192];
 };
 

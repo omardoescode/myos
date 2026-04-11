@@ -1,5 +1,4 @@
 #include "common.h"
-#include "sbi.h"
 
 void printf(const char *fmt, ...) {
   va_list vargs;
@@ -111,69 +110,4 @@ void *memcpy(void *dest, const void *src, size_t n) {
     buf[i] = src_buf[i];
   }
   return dest;
-}
-
-void putchar(char ch) {
-  // a7 = 1: Console Putchar, writes to the UART hardware
-  sbi_call(ch, 0, 0, 0, 0, 0, 0, 1);
-}
-
-char getchar(void) {
-  char c = 0;
-  for (;;) {
-    struct sbiret ret = sbi_call(0, 0, 0, 0, 0, 0, 0, 2);
-    // this ecall puts the char in error
-    if (ret.error != -1) {
-      c = ret.error;
-      break;
-    }
-  }
-  return c;
-}
-
-char *strcpy(char *dst, const char *src) {
-  char *org = dst;
-  while (*src != '\0') {
-    *dst = *src;
-    dst++, src++;
-  }
-  *dst = '\0';
-  return org;
-}
-
-int strcmp(const char *s1, const char *s2) {
-  while (*s1 && *s2) {
-    if (*s1 != *s2) {
-      break;
-    }
-    s1++, s2++;
-  }
-  return *(unsigned char *)s1 - *(unsigned char *)s2;
-}
-
-char *readline(char *buf, size_t n) {
-  size_t i;
-
-  for (i = 0; n - 1 > i; i++) {
-    char c = getchar();
-    putchar(c);
-    if (c == '\n' || c == '\r') {
-      buf[i] = '\0';
-      break;
-    }
-    buf[i] = c;
-  }
-  buf[i] = '\0';
-  putchar('\n');
-
-  return buf;
-}
-
-size_t strlen(const char *s) {
-  size_t res;
-
-  res = 0;
-  while (*s != '\0')
-    res++, s++;
-  return res;
 }

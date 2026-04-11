@@ -6,6 +6,8 @@
 // __bss means the start address of the `.bss` section, so we use `[]` to ensure
 // that _bss returns  an address and prevent any mistakes
 extern char __bss[], __bss_end[], __stack_top[];
+extern char _binary_shell_bin_start[];
+extern char _binary_shell_bin_size[];
 
 void kernel_entry(void);
 
@@ -38,16 +40,8 @@ void proc_b_entry(void) {
 void kernel_main(void) {
   memset(__bss, 0, (size_t)__bss_end - (size_t)__bss);
 
-  WRITE_CSR(stvec, (uint32_t)kernel_entry);
-  idle_proc = create_process((uint32_t)NULL);
-  idle_proc->pid = 0;
-  current_proc = idle_proc;
-
-  proc_a = create_process((uint32_t)proc_a_entry);
-  proc_b = create_process((uint32_t)proc_b_entry);
-
-  yield();
-  PANIC("switched to idle process");
+  printf("%d\n", _binary_shell_bin_size);
+  printf("%p\n", _binary_shell_bin_start);
 
   PANIC("booted!");
 }
@@ -149,6 +143,7 @@ __attribute__((naked)) __attribute__((aligned(4))) void kernel_entry(void) {
 }
 
 void handle_trap(struct trap_frame *f) {
+  (void)f;
   uint32_t scause = READ_CSR(scause);
   uint32_t stval = READ_CSR(stval);
   uint32_t user_pc = READ_CSR(sepc);
