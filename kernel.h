@@ -47,3 +47,5 @@ struct trap_frame {
     uint32_t __tmp = (value);                                                  \
     __asm__ __volatile__("csrw " #reg ", %0" ::"r"(__tmp));                    \
   } while (0)
+
+paddr_t alloc_pages(uint32_t n);
