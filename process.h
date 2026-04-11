@@ -1,5 +1,5 @@
 #pragma once
-#include "common.h"
+#include "paging.h"
 
 #define PROCS_MAX 8
 #define PROC_UNUSED 0
@@ -17,5 +17,5 @@ extern struct process *current_proc;
 extern struct process *idle_proc;
 
 void switch_context(uint32_t *prev_sp, uint32_t *next_sp);
-struct process *create_process(uint32_t);
+struct process *create_process(const void *image, size_t image_size);
 void yield(void);

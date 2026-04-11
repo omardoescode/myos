@@ -3,6 +3,7 @@
 #include "kernel.h"
 #include "paging.h"
 #include "panic.h"
+#include "userland.h"
 
 extern char __kernel_base[], __free_ram_end[];
 
@@ -48,7 +49,7 @@ __attribute__((naked)) void switch_context(uint32_t *prev_sp,
       "ret\n");
 }
 
-struct process *create_process(uint32_t pc) {
+struct process *create_process(const void *image, size_t image_size) {
   struct process *proc = NULL;
   int i;
   for (i = 0; i < PROCS_MAX; i++) {
@@ -62,25 +63,37 @@ struct process *create_process(uint32_t pc) {
     PANIC("no free process slots");
 
   uint32_t *sp = (uint32_t *)&proc->stack[sizeof(proc->stack)];
-  *--sp = 0;            // s11
-  *--sp = 0;            // s10
-  *--sp = 0;            // s9
-  *--sp = 0;            // s8
-  *--sp = 0;            // s7
-  *--sp = 0;            // s6
-  *--sp = 0;            // s5
-  *--sp = 0;            // s4
-  *--sp = 0;            // s3
-  *--sp = 0;            // s2
-  *--sp = 0;            // s1
-  *--sp = 0;            // s0
-  *--sp = (uint32_t)pc; // ra
+  *--sp = 0;                    // s11
+  *--sp = 0;                    // s10
+  *--sp = 0;                    // s9
+  *--sp = 0;                    // s8
+  *--sp = 0;                    // s7
+  *--sp = 0;                    // s6
+  *--sp = 0;                    // s5
+  *--sp = 0;                    // s4
+  *--sp = 0;                    // s3
+  *--sp = 0;                    // s2
+  *--sp = 0;                    // s1
+  *--sp = 0;                    // s0
+  *--sp = (uint32_t)user_entry; // ra
 
   // Map Kernel Pages
   uint32_t *page_table = (uint32_t *)alloc_pages(1);
   for (paddr_t paddr = (paddr_t)__kernel_base; paddr < (paddr_t)__free_ram_end;
        paddr += PAGE_SIZE)
     map_page(page_table, paddr, paddr, PAGE_R | PAGE_W | PAGE_X);
+
+  // Map User pages
+  for (uint32_t off = 0; off < image_size; off += PAGE_SIZE) {
+    paddr_t page = alloc_pages(1);
+
+    size_t remaining = image_size - off;
+    size_t copy_size = PAGE_SIZE <= remaining ? PAGE_SIZE : remaining;
+
+    memcpy((void *)page, image + off, copy_size);
+    map_page(page_table, USER_BASE + off, page,
+             PAGE_U | PAGE_R | PAGE_W | PAGE_X);
+  }
 
   // Initialize Fields
   proc->pid = i + 1;

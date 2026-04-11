@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common.h"
+#include "paging.h"
 struct trap_frame {
   uint32_t ra;
   uint32_t gp;
@@ -49,3 +49,7 @@ struct trap_frame {
   } while (0)
 
 paddr_t alloc_pages(uint32_t n);
+
+// The base virtual address of an application image. This needs to match the
+// starting address defined in `user.ld`.
+#define USER_BASE 0x1000000

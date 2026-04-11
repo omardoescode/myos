@@ -6,8 +6,6 @@ typedef unsigned short uint16_t;
 typedef unsigned int uint32_t;
 typedef unsigned int uint64_t;
 typedef uint32_t size_t;
-typedef uint32_t paddr_t;
-typedef uint32_t vaddr_t;
 typedef int bool;
 
 // Support for booleans

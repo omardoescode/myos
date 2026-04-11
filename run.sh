@@ -12,7 +12,7 @@ $OBJCOPY -Ibinary -Oelf32-littleriscv shell.bin shell.bin.o
 
 # Build the kernel
 bear -- $CC $CFLAGS -Wl,-Tkernel.ld -Wl,-Map=kernel.map -o kernel.elf \
-  kernel.c common.c sbi.c process.c paging.c utils.c shell.bin.o
+  kernel.c common.c sbi.c process.c paging.c utils.c userland.c shell.bin.o
 
 # Start Qemu
 $QEMU \
