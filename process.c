@@ -134,3 +134,8 @@ void yield(void) {
 
   switch_context(&prev->sp, &next->sp);
 }
+
+void destroy_process(struct process *p) {
+  ASSERT(p != NULL, "null pointer exception");
+  uint32_t *tbl = p->page_table;
+}

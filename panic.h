@@ -6,3 +6,12 @@
     while (1)                                                                  \
       ;                                                                        \
   } while (0)
+
+#define ASSERT(condition, fmt, ...)                                            \
+  do {                                                                         \
+    if (!(condition)) {                                                        \
+      printf("ASSERT: %s:%d: " fmt "\n", __FILE__, __LINE__, ##__VA_ARGS__);   \
+      while (1)                                                                \
+        ;                                                                      \
+    }                                                                          \
+  } while (0)

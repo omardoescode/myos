@@ -19,4 +19,5 @@ extern struct process *idle_proc;
 
 void switch_context(uint32_t *prev_sp, uint32_t *next_sp);
 struct process *create_process(const void *image, size_t image_size);
+void destory_process(struct process *proc);
 void yield(void);
