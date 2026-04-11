@@ -64,21 +64,3 @@ void map_page(uint32_t *table1, uint32_t vaddr, paddr_t paddr, uint32_t flags) {
   uint32_t *table0 = (uint32_t *)((table1[vpn1] >> 10) * PAGE_SIZE);
   table0[vpn0] = ((paddr / PAGE_SIZE) << 10) | flags | PAGE_V;
 }
-
-paddr_t unmap_page(uint32_t *table1, uint32_t vaddr) {
-  uint32_t vpn1 = (vaddr >> 22) & 0x3ff;
-  uint32_t vpn0 = (vaddr >> 12) & 0x3ff;
-
-  paddr_t paddr = table1[vpn1];
-  if (!(paddr & PAGE_V))
-    return 0;
-
-  uint32_t *table0 = (uint32_t *)((paddr >> 10) * PAGE_SIZE);
-  if (!(table0[vpn0] & PAGE_V))
-    return 0;
-
-  uint32_t entry = table0[vpn0];
-  table0[vpn0] = 0;
-  paddr_t mapped = (entry >> 10) * PAGE_SIZE;
-  return mapped;
-}

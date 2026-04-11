@@ -135,7 +135,25 @@ void yield(void) {
   switch_context(&prev->sp, &next->sp);
 }
 
-void destroy_process(struct process *p) {
-  ASSERT(p != NULL, "null pointer exception");
-  uint32_t *tbl = p->page_table;
+void destroy_process(struct process *proc) {
+  ASSERT(proc != NULL, "null pointer exception");
+
+  for (size_t i = 0; i < 1024; i++) {
+    if (!(proc->page_table[i] & PAGE_V))
+      continue;
+
+    uint32_t *table0 = (uint32_t *)((proc->page_table[i] >> 10) * PAGE_SIZE);
+    for (size_t j = 0; j < 1024; j++) {
+      if (!(table0[j] & PAGE_V))
+        continue;
+
+      if (table0[j] & PAGE_U)
+        free_pages((table0[j] >> 10) * PAGE_SIZE, 1);
+    }
+    free_pages((paddr_t)table0, 1);
+
+    proc->page_table[i] = 0;
+  }
+  free_pages((paddr_t)proc->page_table, 1);
+  proc->state = PROC_UNUSED;
 }

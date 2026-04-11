@@ -31,9 +31,10 @@ void handle_syscall(struct trap_frame *f) {
     f->a0 = getchar();
     break;
   case SYS_EXIT:
-    // TODO: Free resources taken by the process
+    // NOTE: if we add fork/wait later, split into zombie (PROC_EXITED)
+    // and reap (PROC_UNUSED via wait). For now, destroy immediately.
     printf("process %d exited\n", current_proc->pid);
-    current_proc->state = PROC_EXITED;
+    destroy_process(current_proc);
     yield();
     PANIC("unreachable");
     break;
