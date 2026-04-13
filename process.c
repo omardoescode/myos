@@ -4,6 +4,7 @@
 #include "paging.h"
 #include "panic.h"
 #include "userland.h"
+#include "virtio.h"
 
 extern char __kernel_base[], __free_ram_end[];
 
@@ -82,6 +83,7 @@ struct process *create_process(const void *image, size_t image_size) {
   for (paddr_t paddr = (paddr_t)__kernel_base; paddr < (paddr_t)__free_ram_end;
        paddr += PAGE_SIZE)
     map_page(page_table, paddr, paddr, PAGE_R | PAGE_W | PAGE_X);
+  map_page(page_table, VIRTIO_BLK_PADDR, VIRTIO_BLK_PADDR, PAGE_R | PAGE_W);
 
   // Map User pages
   for (uint32_t off = 0; off < image_size; off += PAGE_SIZE) {
@@ -128,6 +130,14 @@ void yield(void) {
       // Don't forget the trailing comma!
       : [satp] "r"(SATP_SV32 | ((uint32_t)next->page_table / PAGE_SIZE)),
         [sscratch] "r"((uint32_t)&next->stack[sizeof(next->stack)]));
+
+  // Clean up exited processes now that we've switched page tables
+  for (int i = 0; i < PROCS_MAX; i++) {
+    if (procs[i].state == PROC_EXITED) {
+      destroy_process(&procs[i]);
+      printf("Clean up process %d\n", i);
+    }
+  }
 
   struct process *prev = current_proc;
   current_proc = next;

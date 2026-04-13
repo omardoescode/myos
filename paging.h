@@ -16,4 +16,3 @@ paddr_t alloc_pages(uint32_t n);
 void free_pages(paddr_t addr, uint32_t n);
 
 void map_page(uint32_t *table1, uint32_t vaddr, paddr_t paddr, uint32_t flags);
-paddr_t unmap_page(uint32_t *page_table, uint32_t vaddr);

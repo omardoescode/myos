@@ -3,6 +3,7 @@
 #include "csr.h"
 #include "panic.h"
 #include "process.h"
+#include "virtio.h"
 
 // __bss means the start address of the `.bss` section, so we use `[]` to ensure
 // that _bss returns  an address and prevent any mistakes
@@ -14,17 +15,16 @@ void kernel_entry(void);
 
 void kernel_main(void) {
   memset(__bss, 0, (size_t)__bss_end - (size_t)__bss);
-
-  printf("\n\n");
   WRITE_CSR(stvec, (uint32_t)kernel_entry);
 
-  idle_proc = create_process(NULL, 0);
-  idle_proc->pid = 0;
-  current_proc = idle_proc;
+  virtio_blk_init();
 
-  create_process(_binary_shell_bin_start, (size_t)_binary_shell_bin_size);
+  char buf[SECTOR_SIZE];
+  read_write_disk(buf, 0, false);
+  printf("first sector: %s\n", buf);
 
-  yield();
+  strcpy(buf, "Hello from kernel!!!\n");
+  read_write_disk(buf, 0, true);
 
   PANIC("Switched to idle process");
 }

@@ -12,7 +12,7 @@ $OBJCOPY -Ibinary -Oelf32-littleriscv shell.bin shell.bin.o
 
 # Build the kernel
 bear -- $CC $CFLAGS -Wl,-Tkernel.ld -Wl,-Map=kernel.map -o kernel.elf \
-  kernel.c common.c sbi.c process.c paging.c utils.c userland.c trap.c shell.bin.o
+  kernel.c common.c sbi.c process.c paging.c utils.c userland.c trap.c virtio.c shell.bin.o
 
 # Start Qemu
 $QEMU \
@@ -23,4 +23,6 @@ $QEMU \
   --no-reboot \
   -echr 0x11 \
   -d unimp,guest_errors,int,cpu_reset -D qemu.log \
+  -drive id=drive0,file=lorem.txt,format=raw,if=none \
+  -device virtio-blk-device,drive=drive0,bus=virtio-mmio-bus.0 \
   -kernel kernel.elf
