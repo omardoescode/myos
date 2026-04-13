@@ -6,5 +6,5 @@ __attribute__((naked)) void user_entry(void) {
       "sret                      \n" // switch from S-mode to U-mode if spp bit
                                      // in sstatus is 0
       :
-      : [sepc] "r"(USER_BASE), [sstatus] "r"(SSTATUS_SPIE));
+      : [sepc] "r"(USER_BASE), [sstatus] "r"(SSTATUS_SPIE | SSTATUS_SUM));
 }

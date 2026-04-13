@@ -1,6 +1,7 @@
 #include "kernel.h"
 #include "common.h"
 #include "csr.h"
+#include "fs.h"
 #include "panic.h"
 #include "process.h"
 #include "virtio.h"
@@ -18,13 +19,15 @@ void kernel_main(void) {
   WRITE_CSR(stvec, (uint32_t)kernel_entry);
 
   virtio_blk_init();
+  fs_init();
 
-  char buf[SECTOR_SIZE];
-  read_write_disk(buf, 0, false);
-  printf("first sector: %s\n", buf);
+  idle_proc = create_process(NULL, 0);
+  idle_proc->pid = 0;
+  current_proc = idle_proc;
 
-  strcpy(buf, "Hello from kernel!!!\n");
-  read_write_disk(buf, 0, true);
+  create_process(_binary_shell_bin_start, (size_t)_binary_shell_bin_size);
+
+  yield();
 
   PANIC("Switched to idle process");
 }
