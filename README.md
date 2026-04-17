@@ -9,7 +9,8 @@ Currently building using this as a guide: https://operating-system-in-1000-lines
 
 ## Next Steps
 - [x] Proper memory allocator with freeing (replace bitmap with something better)
-- [x] Interrupt-driven disk I/O (no busy-wait)
+- [x] Interrupt-driven standard input
+- [ ] Interrupt-driven disk I/O (no busy-wait)
 - [ ] Full filesystem (ext2 would be a good start)
 - [ ] Network communication via virtio-net (UDP/IP first, TCP later)
 - [ ] Study xv6 RISC-V — UNIX-like teaching OS with book

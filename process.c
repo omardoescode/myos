@@ -117,7 +117,6 @@ struct process *current_proc;
 struct process *idle_proc;
 
 void yield(void) {
-  WRITE_CSR(sstatus, READ_CSR(sstatus) | SSTATUS_SIE);
   struct process *next = idle_proc;
   for (int i = 0; i < PROCS_MAX; i++) {
     struct process *proc = &procs[(current_proc->pid + i) % PROCS_MAX];

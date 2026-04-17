@@ -18,8 +18,9 @@ void handle_trap(struct trap_frame *f) {
     uint32_t masked = scause & 0x7FFFFFFF;
     uint32_t irq = plic_claim();
     if (masked == SCAUSE_S_EXTERNAL_INT) {
-      char result = uart_read();
-      uart_push(result);
+      while (uart_has_rx()) {
+        uart_push(uart_read());
+      }
       wakeup_processes();
       plic_complete(irq);
     }

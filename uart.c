@@ -9,7 +9,14 @@ char ring_buffer[RING_BUFFER_SIZE];
 int in = 0;
 int out = 0;
 
-void uart_setup() { *((volatile uint8_t *)(UART_BASE + UART_IER)) = 1; }
+void uart_setup() {
+  *((volatile uint8_t *)(UART_BASE + UART_IER)) = 1;
+  *((volatile uint8_t *)(UART_BASE + UART_FCR)) =
+      UART_FCR_ENABLE | UART_FCR_CLEAR_RX | UART_FCR_CLEAR_TX;
+}
+bool uart_has_rx() {
+  return *((volatile uint8_t *)(UART_BASE + UART_LSR)) & UART_LSR_DR;
+}
 char uart_read(void) { return *((volatile uint8_t *)(UART_BASE + UART_RBR)); }
 
 void uart_push(char value) {
