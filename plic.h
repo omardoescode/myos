@@ -2,6 +2,7 @@
 #include "common.h"
 
 #define PLIC_BASE 0x0C000000
+#define PLIC_SIZE 0x600000
 
 // UART is IRQ 10 (from device tree: serial@10000000 { interrupts = <0x0a> })
 #define UART_IRQ 10

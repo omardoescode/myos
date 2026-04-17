@@ -2,9 +2,11 @@
 #include "paging.h"
 
 #define PROCS_MAX 8
+
 #define PROC_UNUSED 0
 #define PROC_RUNNABLE 1
-#define PROC_EXITED 2
+#define PROC_WAITING 2
+#define PROC_EXITED 3
 
 struct process {
   int pid;
@@ -19,5 +21,7 @@ extern struct process *idle_proc;
 
 void switch_context(uint32_t *prev_sp, uint32_t *next_sp);
 struct process *create_process(const void *image, size_t image_size);
+void wakeup_processes();
+void sleep_current_process();
 void destroy_process(struct process *proc);
 void yield(void);

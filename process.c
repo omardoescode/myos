@@ -1,8 +1,11 @@
 #include "process.h"
 #include "common.h"
+#include "csr.h"
 #include "kernel.h"
 #include "paging.h"
 #include "panic.h"
+#include "plic.h"
+#include "uart.h"
 #include "userland.h"
 #include "virtio.h"
 
@@ -11,43 +14,43 @@ extern char __kernel_base[], __free_ram_end[];
 struct process procs[PROCS_MAX];
 __attribute__((naked)) void switch_context(uint32_t *prev_sp,
                                            uint32_t *next_sp) {
-  __asm__ __volatile__(
-      // Save callee-saved registers onto the current process's stack.
-      "addi sp, sp, -13 * 4\n" // Allocate stack space for 13 4-byte registers
-      "sw ra,  0  * 4(sp)\n"   // Save callee-saved registers only
-      "sw s0,  1  * 4(sp)\n"
-      "sw s1,  2  * 4(sp)\n"
-      "sw s2,  3  * 4(sp)\n"
-      "sw s3,  4  * 4(sp)\n"
-      "sw s4,  5  * 4(sp)\n"
-      "sw s5,  6  * 4(sp)\n"
-      "sw s6,  7  * 4(sp)\n"
-      "sw s7,  8  * 4(sp)\n"
-      "sw s8,  9  * 4(sp)\n"
-      "sw s9,  10 * 4(sp)\n"
-      "sw s10, 11 * 4(sp)\n"
-      "sw s11, 12 * 4(sp)\n"
+  __asm__ __volatile__("addi sp, sp, -14 * 4\n"
+                       "sw ra,  0  * 4(sp)\n"
+                       "sw s0,  1  * 4(sp)\n"
+                       "sw s1,  2  * 4(sp)\n"
+                       "sw s2,  3  * 4(sp)\n"
+                       "sw s3,  4  * 4(sp)\n"
+                       "sw s4,  5  * 4(sp)\n"
+                       "sw s5,  6  * 4(sp)\n"
+                       "sw s6,  7  * 4(sp)\n"
+                       "sw s7,  8  * 4(sp)\n"
+                       "sw s8,  9  * 4(sp)\n"
+                       "sw s9,  10 * 4(sp)\n"
+                       "sw s10, 11 * 4(sp)\n"
+                       "sw s11, 12 * 4(sp)\n"
+                       "csrr t0, sstatus\n"
+                       "sw t0,  13 * 4(sp)\n"
 
-      // Switch the stack pointer.
-      "sw sp, (a0)\n" // *prev_sp = sp;
-      "lw sp, (a1)\n" // Switch stack pointer (sp) here
+                       "sw sp, (a0)\n"
+                       "lw sp, (a1)\n"
 
-      // Restore callee-saved registers from the next process's stack.
-      "lw ra,  0  * 4(sp)\n" // Restore callee-saved registers only
-      "lw s0,  1  * 4(sp)\n"
-      "lw s1,  2  * 4(sp)\n"
-      "lw s2,  3  * 4(sp)\n"
-      "lw s3,  4  * 4(sp)\n"
-      "lw s4,  5  * 4(sp)\n"
-      "lw s5,  6  * 4(sp)\n"
-      "lw s6,  7  * 4(sp)\n"
-      "lw s7,  8  * 4(sp)\n"
-      "lw s8,  9  * 4(sp)\n"
-      "lw s9,  10 * 4(sp)\n"
-      "lw s10, 11 * 4(sp)\n"
-      "lw s11, 12 * 4(sp)\n"
-      "addi sp, sp, 13 * 4\n" // We've popped 13 4-byte registers from the stack
-      "ret\n");
+                       "lw t0,  13 * 4(sp)\n"
+                       "csrw sstatus, t0\n"
+                       "lw ra,  0  * 4(sp)\n"
+                       "lw s0,  1  * 4(sp)\n"
+                       "lw s1,  2  * 4(sp)\n"
+                       "lw s2,  3  * 4(sp)\n"
+                       "lw s3,  4  * 4(sp)\n"
+                       "lw s4,  5  * 4(sp)\n"
+                       "lw s5,  6  * 4(sp)\n"
+                       "lw s6,  7  * 4(sp)\n"
+                       "lw s7,  8  * 4(sp)\n"
+                       "lw s8,  9  * 4(sp)\n"
+                       "lw s9,  10 * 4(sp)\n"
+                       "lw s10, 11 * 4(sp)\n"
+                       "lw s11, 12 * 4(sp)\n"
+                       "addi sp, sp, 14 * 4\n"
+                       "ret\n");
 }
 
 struct process *create_process(const void *image, size_t image_size) {
@@ -64,6 +67,7 @@ struct process *create_process(const void *image, size_t image_size) {
     PANIC("no free process slots");
 
   uint32_t *sp = (uint32_t *)&proc->stack[sizeof(proc->stack)];
+  *--sp = SSTATUS_SIE;          // sstatus: start with interrupts enabled
   *--sp = 0;                    // s11
   *--sp = 0;                    // s10
   *--sp = 0;                    // s9
@@ -84,6 +88,10 @@ struct process *create_process(const void *image, size_t image_size) {
        paddr += PAGE_SIZE)
     map_page(page_table, paddr, paddr, PAGE_R | PAGE_W | PAGE_X);
   map_page(page_table, VIRTIO_BLK_PADDR, VIRTIO_BLK_PADDR, PAGE_R | PAGE_W);
+
+  map_page(page_table, UART_BASE, UART_BASE, PAGE_R | PAGE_W);
+  for (paddr_t p = PLIC_BASE; p < PLIC_BASE + PLIC_SIZE; p += PAGE_SIZE)
+    map_page(page_table, p, p, PAGE_R | PAGE_W);
 
   // Map User pages
   for (uint32_t off = 0; off < image_size; off += PAGE_SIZE) {
@@ -109,6 +117,7 @@ struct process *current_proc;
 struct process *idle_proc;
 
 void yield(void) {
+  WRITE_CSR(sstatus, READ_CSR(sstatus) | SSTATUS_SIE);
   struct process *next = idle_proc;
   for (int i = 0; i < PROCS_MAX; i++) {
     struct process *proc = &procs[(current_proc->pid + i) % PROCS_MAX];
@@ -167,3 +176,11 @@ void destroy_process(struct process *proc) {
   free_pages((paddr_t)proc->page_table, 1);
   proc->state = PROC_UNUSED;
 }
+
+void wakeup_processes() {
+  for (int i = 0; i < PROCS_MAX; i++)
+    if (procs[i].state == PROC_WAITING)
+      procs[i].state = PROC_RUNNABLE;
+}
+
+void sleep_current_process() { current_proc->state = PROC_WAITING; }

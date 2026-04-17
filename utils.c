@@ -1,20 +1,16 @@
 #include "common.h"
+#include "process.h"
 #include "sbi.h"
+#include "uart.h"
 
-void putchar(char ch) {
-  sbi_call(ch, 0, 0, 0, 0, 0, 0, 1);
-}
+void putchar(char ch) { sbi_call(ch, 0, 0, 0, 0, 0, 0, 1); }
 
 char getchar(void) {
-  char c = 0;
-  for (;;) {
-    struct sbiret ret = sbi_call(0, 0, 0, 0, 0, 0, 0, 2);
-    if (ret.error != -1) {
-      c = ret.error;
-      break;
-    }
+  while (!uart_has_data()) {
+    sleep_current_process();
+    yield();
   }
-  return c;
+  return uart_pop();
 }
 
 char *readline(char *buf, size_t n) {

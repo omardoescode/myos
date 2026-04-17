@@ -15,3 +15,10 @@
         ;                                                                      \
     }                                                                          \
   } while (0)
+
+#define TODO(todo)                                                             \
+  do {                                                                         \
+    printf("Not Implemented: %s", todo);                                       \
+    while (1)                                                                  \
+      ;                                                                        \
+  } while (0)

@@ -2,8 +2,10 @@
 #include "csr.h"
 #include "fs.h"
 #include "panic.h"
+#include "plic.h"
 #include "process.h"
 #include "syscall.h"
+#include "uart.h"
 
 #define SCAUSE_ECALL 8
 
@@ -14,7 +16,12 @@ void handle_trap(struct trap_frame *f) {
 
   if (scause & SCAUSE_INTERRUPT_BIT) {
     uint32_t masked = scause & 0x7FFFFFFF;
+    uint32_t irq = plic_claim();
     if (masked == SCAUSE_S_EXTERNAL_INT) {
+      char result = uart_read();
+      uart_push(result);
+      wakeup_processes();
+      plic_complete(irq);
     }
   } else if (scause == SCAUSE_ECALL) {
     handle_syscall(f);

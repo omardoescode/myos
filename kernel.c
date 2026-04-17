@@ -2,7 +2,6 @@
 #include "common.h"
 #include "csr.h"
 #include "fs.h"
-#include "panic.h"
 #include "plic.h"
 #include "process.h"
 #include "uart.h"
@@ -20,9 +19,9 @@ void kernel_entry(void);
 void kernel_main(void) {
   memset(__bss, 0, (size_t)__bss_end - (size_t)__bss);
   WRITE_CSR(stvec, (uint32_t)kernel_entry);
-
   plic_setup();
-  WRITE_CSR(sie, READ_CSR(sie) | SSTATUS_SSIE);
+  WRITE_CSR(sie, READ_CSR(sie) | SIE_SEIE);
+  WRITE_CSR(sstatus, READ_CSR(sstatus) | SSTATUS_SIE);
 
   uart_setup();
 
@@ -34,10 +33,12 @@ void kernel_main(void) {
   current_proc = idle_proc;
 
   create_process(_binary_shell_bin_start, (size_t)_binary_shell_bin_size);
-
   yield();
 
-  PANIC("Switched to idle process");
+  for (;;) {
+    __asm__ __volatile__("wfi");
+    yield();
+  }
 }
 
 // place this in the `.text.boot` section in the linker script
