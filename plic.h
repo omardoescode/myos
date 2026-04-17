@@ -29,6 +29,6 @@
 // S-mode context 1: 0x200004 + 0x1000 * 1 = 0x201004
 #define PLIC_CLAIM(context) (0x200004 + 0x1000 * (context))
 
-void setup_plic(void);
+void plic_setup(void);
 uint32_t plic_claim(void);
 void plic_complete(uint32_t irq);

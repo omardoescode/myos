@@ -12,7 +12,7 @@ $OBJCOPY -Ibinary -Oelf32-littleriscv shell.bin shell.bin.o
 
 # Build the kernel
 bear -- $CC $CFLAGS -Wl,-Tkernel.ld -Wl,-Map=kernel.map -o kernel.elf \
-  kernel.c common.c sbi.c process.c paging.c utils.c userland.c trap.c virtio.c fs.c shell.bin.o
+  kernel.c plic.c common.c sbi.c process.c paging.c utils.c userland.c trap.c virtio.c fs.c uart.c shell.bin.o
 
 # Create a TAR disk
 (cd disk && tar cf ../disk.tar --format=ustar *.txt)

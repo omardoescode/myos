@@ -3,7 +3,10 @@
 #include "csr.h"
 #include "fs.h"
 #include "panic.h"
+#include "plic.h"
 #include "process.h"
+#include "uart.h"
+#include "userland.h"
 #include "virtio.h"
 
 // __bss means the start address of the `.bss` section, so we use `[]` to ensure
@@ -17,6 +20,11 @@ void kernel_entry(void);
 void kernel_main(void) {
   memset(__bss, 0, (size_t)__bss_end - (size_t)__bss);
   WRITE_CSR(stvec, (uint32_t)kernel_entry);
+
+  plic_setup();
+  WRITE_CSR(sie, READ_CSR(sie) | SSTATUS_SSIE);
+
+  uart_setup();
 
   virtio_blk_init();
   fs_init();

@@ -12,7 +12,11 @@ void handle_trap(struct trap_frame *f) {
   uint32_t stval = READ_CSR(stval);
   uint32_t user_pc = READ_CSR(sepc);
 
-  if (scause == SCAUSE_ECALL) {
+  if (scause & SCAUSE_INTERRUPT_BIT) {
+    uint32_t masked = scause & 0x7FFFFFFF;
+    if (masked == SCAUSE_S_EXTERNAL_INT) {
+    }
+  } else if (scause == SCAUSE_ECALL) {
     handle_syscall(f);
     user_pc += 4;
   } else {

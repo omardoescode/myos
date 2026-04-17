@@ -1,5 +1,6 @@
 #include "plic.h"
 #include "common.h"
+#include "uart.h"
 
 void plic_reg_write32(unsigned offset, uint32_t value) {
   *((volatile uint32_t *)(PLIC_BASE + offset)) = value;
@@ -8,7 +9,7 @@ void plic_reg_write32(unsigned offset, uint32_t value) {
 uint32_t plic_reg_read32(unsigned offset) {
   return *((volatile uint32_t *)(PLIC_BASE + offset));
 }
-void setup_plic() {
+void plic_setup() {
   // Enable UART Interrupt
   plic_reg_write32(PLIC_PRIORITY(UART_IRQ), 1);
 

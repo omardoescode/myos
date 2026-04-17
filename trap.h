@@ -35,5 +35,10 @@ struct trap_frame {
   uint32_t sp;
 } __attribute__((packed));
 
+#define SCAUSE_INTERRUPT_BIT 0x80000000
+#define SCAUSE_INTERRUPT_MASK 0x7FFFFFFF
+#define SCAUSE_S_EXTERNAL_INT 9
+#define SCAUSE_ECALL 8
+
 void handle_trap(struct trap_frame *f);
 void handle_syscall(struct trap_frame *f);

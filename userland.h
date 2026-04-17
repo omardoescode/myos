@@ -5,5 +5,6 @@
 
 #define SSTATUS_SPIE (1 << 5)
 #define SSTATUS_SUM (1 << 18)
+#define SSTATUS_SSIE (1 << 9)
 
 void user_entry(void);
