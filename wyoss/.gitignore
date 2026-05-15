@@ -1,0 +1,19 @@
+# Build artifacts
+*.o
+*.bin
+*.iso
+obj/
+
+# Generated files
+compile_commands.json
+qemu-int.log
+
+# Big / data files
+*.img
+*.dtb
+big.txt
+
+# Media
+*.mkv
+*.mp4
+*.avi

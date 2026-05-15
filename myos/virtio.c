@@ -1,5 +1,6 @@
 #include "virtio.h"
 #include "panic.h"
+#include "process.h"
 
 uint32_t virtio_reg_read32(unsigned offset) {
   return *((volatile uint32_t *)(VIRTIO_BLK_PADDR + offset));
@@ -119,8 +120,11 @@ void read_write_disk(void *buf, unsigned sector, int is_write) {
   virtq_kick(vq, 0);
 
   // Wait until the device finishes processing.
-  while (virtq_is_busy(vq))
-    ;
+  // TODO: Make the process sleep
+  while (virtq_is_busy(vq)) {
+    sleep_current_process();
+    yield();
+  }
 
   // virtio-blk: If a non-zero value is returned, it's an error.
   if (blk_req->status != 0) {

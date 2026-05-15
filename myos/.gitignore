@@ -8,3 +8,5 @@
 *.log
 *.pcap
 compile_commands.json
+*.dtb
+docs/*.pdf
